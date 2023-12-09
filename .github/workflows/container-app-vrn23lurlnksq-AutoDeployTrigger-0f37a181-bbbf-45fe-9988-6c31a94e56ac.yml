@@ -1,0 +1,45 @@
+name: Trigger auto deployment for container-app-vrn23lurlnksq
+
+# When this action will be executed
+on:
+  # Automatically trigger it when detected changes in repo
+  push:
+    branches: 
+      [ main ]
+    paths:
+    - '**'
+    - '.github/workflows/container-app-vrn23lurlnksq-AutoDeployTrigger-0f37a181-bbbf-45fe-9988-6c31a94e56ac.yml'
+
+  # Allow manual trigger 
+  workflow_dispatch:      
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions: 
+      id-token: write #This is required for requesting the OIDC JWT Token
+
+    steps:
+      - name: Checkout to the branch
+        uses: actions/checkout@v2
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.CONTAINERAPPVRN23LURLNKSQ_AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.CONTAINERAPPVRN23LURLNKSQ_AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.CONTAINERAPPVRN23LURLNKSQ_AZURE_SUBSCRIPTION_ID }}
+
+      - name: Build and push container image to registry
+        uses: azure/container-apps-deploy-action@v2
+        with:
+          appSourcePath: ${{ github.workspace }} 
+          registryUrl: containerregistryvrn23lurlnksq.azurecr.io
+          registryUsername: ${{ secrets.CONTAINERAPPVRN23LURLNKSQ_REGISTRY_USERNAME }}
+          registryPassword: ${{ secrets.CONTAINERAPPVRN23LURLNKSQ_REGISTRY_PASSWORD }}
+          containerAppName: container-app-vrn23lurlnksq
+          resourceGroup: shopifyapptemplaterubybc4b
+          imageToBuild: containerregistryvrn23lurlnksq.azurecr.io/container-app-vrn23lurlnksq:${{ github.sha }}
+          dockerfilePath: Dockerfile
+
+
